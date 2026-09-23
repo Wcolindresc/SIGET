@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-siget}
+      POSTGRES_USER: ${POSTGRES_USER:-siget}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-siget_dev_password}
+    volumes:
+      - siget_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-siget} -d ${POSTGRES_DB:-siget}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://siget:siget_dev_password@postgres:5432/siget?schema=public}
+      JWT_SECRET: ${JWT_SECRET:-siget_dev_only_change_me}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-Cambiar123!}
+      SEED_INVENTARIO_PASSWORD: ${SEED_INVENTARIO_PASSWORD:-Cambiar123!}
+      SEED_USUARIO_PASSWORD: ${SEED_USUARIO_PASSWORD:-Cambiar123!}
+      SEED_TECNICO_PASSWORD: ${SEED_TECNICO_PASSWORD:-Cambiar123!}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    command: sh -c "npx prisma db push && npx prisma db seed && node dist/src/main.js"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  siget_pgdata:

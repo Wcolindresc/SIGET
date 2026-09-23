@@ -1,0 +1,1 @@
+import { EquiposService } from './equipos.service'; describe('EquiposService',()=>{it('lista equipos',async()=>{const prisma:any={equipo:{findMany:jest.fn().mockResolvedValue([])}}; const s=new EquiposService(prisma); await expect(s.list()).resolves.toEqual([]);});});

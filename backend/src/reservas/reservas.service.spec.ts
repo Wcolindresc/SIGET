@@ -1,0 +1,1 @@
+import { BadRequestException } from '@nestjs/common'; import { ReservasService } from './reservas.service'; describe('ReservasService',()=>{it('impide fechas inválidas',async()=>{const s=new ReservasService({} as any); await expect(s.create('u',{equipoId:'e',fechaInicio:'2026-10-02',fechaFin:'2026-10-01',motivo:'x'})).rejects.toBeInstanceOf(BadRequestException);});});

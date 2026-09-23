@@ -1,0 +1,244 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  ADMINISTRADOR
+  ENCARGADO_INVENTARIO
+  USUARIO
+  TECNICO
+}
+
+enum EstadoEquipo {
+  DISPONIBLE
+  RESERVADO
+  PRESTADO
+  MANTENIMIENTO
+  BAJA
+}
+
+enum EstadoReserva {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+  CANCELADA
+  CONVERTIDA_PRESTAMO
+}
+
+enum EstadoPrestamo {
+  ACTIVO
+  ATRASADO
+  DEVUELTO
+}
+
+enum CondicionEquipo {
+  BUENO
+  CON_DANIO
+  NO_FUNCIONAL
+}
+
+enum Severidad {
+  BAJA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+enum EstadoIncidencia {
+  ABIERTA
+  EN_REVISION
+  RESUELTA
+  CERRADA
+}
+
+enum TipoMantenimiento {
+  PREVENTIVO
+  CORRECTIVO
+}
+
+enum EstadoMantenimiento {
+  PENDIENTE
+  EN_PROCESO
+  FINALIZADO
+  CANCELADO
+}
+
+model Usuario {
+  id                 String                @id @default(uuid()) @db.Uuid
+  nombre             String
+  apellido           String
+  correo             String                @unique
+  passwordHash       String
+  rol                Rol
+  activo             Boolean               @default(true)
+  fechaCreacion      DateTime              @default(now())
+  fechaActualizacion DateTime              @updatedAt
+
+  reservas             Reserva[]           @relation("ReservaUsuario")
+  reservasAprobadas    Reserva[]           @relation("ReservaAprobador")
+  prestamos            Prestamo[]          @relation("PrestamoUsuario")
+  prestamosEntregados  Prestamo[]          @relation("PrestamoEntregador")
+  devolucionesRecibidas Devolucion[]       @relation("DevolucionReceptor")
+  incidencias          Incidencia[]
+  mantenimientos       Mantenimiento[]
+  historial            HistorialEstado[]
+}
+
+model Categoria {
+  id            String   @id @default(uuid()) @db.Uuid
+  nombre        String   @unique
+  descripcion   String?
+  activo        Boolean  @default(true)
+  fechaCreacion DateTime @default(now())
+
+  equipos Equipo[]
+}
+
+model Equipo {
+  id                 String       @id @default(uuid()) @db.Uuid
+  codigoInventario   String       @unique
+  nombre             String
+  descripcion        String?
+  marca              String?
+  modelo             String?
+  numeroSerie        String       @unique
+  categoriaId        String       @db.Uuid
+  fechaAdquisicion   DateTime?
+  estado             EstadoEquipo @default(DISPONIBLE)
+  ubicacion          String?
+  observaciones      String?
+  activo             Boolean      @default(true)
+  fechaCreacion      DateTime     @default(now())
+  fechaActualizacion DateTime     @updatedAt
+
+  categoria      Categoria         @relation(fields: [categoriaId], references: [id])
+  reservas       Reserva[]
+  prestamos      Prestamo[]
+  incidencias    Incidencia[]
+  mantenimientos Mantenimiento[]
+  historial      HistorialEstado[]
+
+  @@index([categoriaId])
+  @@index([estado])
+}
+
+model Reserva {
+  id                   String        @id @default(uuid()) @db.Uuid
+  usuarioId            String        @db.Uuid
+  equipoId             String        @db.Uuid
+  fechaInicio          DateTime
+  fechaFin             DateTime
+  motivo               String
+  estado               EstadoReserva @default(PENDIENTE)
+  aprobadoPorId        String?       @db.Uuid
+  observacionRespuesta String?
+  fechaCreacion        DateTime      @default(now())
+  fechaActualizacion   DateTime      @updatedAt
+
+  usuario     Usuario  @relation("ReservaUsuario", fields: [usuarioId], references: [id])
+  equipo      Equipo   @relation(fields: [equipoId], references: [id])
+  aprobadoPor Usuario? @relation("ReservaAprobador", fields: [aprobadoPorId], references: [id])
+  prestamo    Prestamo?
+
+  @@index([usuarioId])
+  @@index([equipoId])
+  @@index([estado])
+  @@index([equipoId, fechaInicio, fechaFin])
+}
+
+model Prestamo {
+  id              String         @id @default(uuid()) @db.Uuid
+  reservaId       String?        @unique @db.Uuid
+  usuarioId       String         @db.Uuid
+  equipoId        String         @db.Uuid
+  entregadoPorId  String         @db.Uuid
+  fechaPrestamo   DateTime
+  fechaLimite     DateTime
+  fechaDevolucion DateTime?
+  estado          EstadoPrestamo @default(ACTIVO)
+  observaciones   String?
+  fechaCreacion   DateTime       @default(now())
+
+  reserva      Reserva?    @relation(fields: [reservaId], references: [id])
+  usuario      Usuario     @relation("PrestamoUsuario", fields: [usuarioId], references: [id])
+  equipo       Equipo      @relation(fields: [equipoId], references: [id])
+  entregadoPor Usuario     @relation("PrestamoEntregador", fields: [entregadoPorId], references: [id])
+  devolucion   Devolucion?
+
+  @@index([usuarioId])
+  @@index([equipoId])
+  @@index([estado])
+}
+
+model Devolucion {
+  id              String          @id @default(uuid()) @db.Uuid
+  prestamoId      String          @unique @db.Uuid
+  fechaDevolucion DateTime
+  recibidoPorId   String          @db.Uuid
+  condicionEquipo CondicionEquipo
+  observaciones   String?
+  esTardia        Boolean         @default(false)
+
+  prestamo    Prestamo @relation(fields: [prestamoId], references: [id])
+  recibidoPor Usuario  @relation("DevolucionReceptor", fields: [recibidoPorId], references: [id])
+}
+
+model Incidencia {
+  id                String            @id @default(uuid()) @db.Uuid
+  equipoId          String            @db.Uuid
+  usuarioReportaId  String            @db.Uuid
+  titulo            String
+  descripcion       String
+  severidad         Severidad
+  estado            EstadoIncidencia  @default(ABIERTA)
+  fechaReporte      DateTime          @default(now())
+  fechaCierre       DateTime?
+
+  equipo         Equipo  @relation(fields: [equipoId], references: [id])
+  usuarioReporta Usuario @relation(fields: [usuarioReportaId], references: [id])
+
+  @@index([equipoId])
+  @@index([estado])
+}
+
+model Mantenimiento {
+  id            String               @id @default(uuid()) @db.Uuid
+  equipoId      String               @db.Uuid
+  tecnicoId     String               @db.Uuid
+  tipo          TipoMantenimiento
+  descripcion   String
+  diagnostico   String?
+  fechaInicio   DateTime
+  fechaFin      DateTime?
+  estado        EstadoMantenimiento  @default(PENDIENTE)
+  costo         Decimal?             @db.Decimal(12, 2)
+  observaciones String?
+
+  equipo  Equipo  @relation(fields: [equipoId], references: [id])
+  tecnico Usuario @relation(fields: [tecnicoId], references: [id])
+
+  @@index([equipoId])
+  @@index([tecnicoId])
+  @@index([estado])
+}
+
+model HistorialEstado {
+  id             String       @id @default(uuid()) @db.Uuid
+  equipoId       String       @db.Uuid
+  estadoAnterior EstadoEquipo
+  estadoNuevo    EstadoEquipo
+  motivo         String
+  usuarioId      String       @db.Uuid
+  fecha          DateTime     @default(now())
+
+  equipo  Equipo  @relation(fields: [equipoId], references: [id])
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+
+  @@index([equipoId])
+  @@index([fecha])
+}

@@ -1,0 +1,1 @@
+import { Module } from '@nestjs/common'; import { MantenimientosController } from './mantenimientos.controller'; import { MantenimientosService } from './mantenimientos.service'; @Module({controllers:[MantenimientosController],providers:[MantenimientosService]}) export class MantenimientosModule{}

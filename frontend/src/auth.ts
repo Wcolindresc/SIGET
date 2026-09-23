@@ -1,0 +1,1 @@
+export type User={id:string;nombre:string;apellido:string;correo:string;rol:string}; export const getUser=():User|null=>{try{return JSON.parse(localStorage.getItem('siget_user')||'null')}catch{return null}}; export const logout=()=>{localStorage.removeItem('siget_token');localStorage.removeItem('siget_user')};

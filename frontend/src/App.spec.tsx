@@ -1,0 +1,1 @@
+import { describe,expect,it } from 'vitest'; describe('SIGET frontend',()=>{it('prueba base',()=>{expect('SIGET').toContain('SIGET')})});

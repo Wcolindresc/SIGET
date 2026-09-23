@@ -1,0 +1,46 @@
+name: CI
+on:
+  push:
+    branches: [DEV, QA, PROD, main]
+  pull_request:
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: siget
+          POSTGRES_USER: siget
+          POSTGRES_PASSWORD: siget_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U siget" --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://siget:siget_ci@localhost:5432/siget?schema=public
+      JWT_SECRET: ci_secret_not_for_production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 20}
+      - name: Backend install
+        working-directory: backend
+        run: npm install
+      - name: Prisma validate
+        working-directory: backend
+        run: npx prisma validate
+      - name: Backend build
+        working-directory: backend
+        run: npm run build
+      - name: Backend tests
+        working-directory: backend
+        run: npm test
+      - name: Frontend install
+        working-directory: frontend
+        run: npm install
+      - name: Frontend build
+        working-directory: frontend
+        run: npm run build
+      - name: Frontend tests
+        working-directory: frontend
+        run: npm test

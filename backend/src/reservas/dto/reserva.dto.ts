@@ -1,0 +1,1 @@
+import { IsDateString,IsOptional,IsString } from 'class-validator'; export class ReservaDto{@IsString() equipoId!:string; @IsDateString() fechaInicio!:string; @IsDateString() fechaFin!:string; @IsString() motivo!:string;} export class RespuestaReservaDto{@IsOptional() @IsString() observacionRespuesta?:string;}
