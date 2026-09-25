@@ -337,7 +337,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"correo\": \"admin@siget.local\",\n  \"password\": \"ClaveIncorrecta123\"\n}",
+              "raw": "{\n  \"correo\": \"usuario.inexistente.qa@siget.local\",\n  \"password\": \"NoExiste123!\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -428,7 +428,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"correo\": \"admin@siget.local\",\n  \"password\": \"Abcd123!\"\n}",
+              "raw": "{\n  \"correo\": \"usuario.inexistente.limite@siget.local\",\n  \"password\": \"Abcd123!\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1957,7 +1957,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Fechas futuras aleatorias para no chocar con datos previos",
-                  "const dias = 60 + Math.floor(Math.random() * 300);",
+                  "const dias = 180;",
                   "const inicio = new Date(Date.now() + dias * 86400000);",
                   "inicio.setUTCHours(14, 0, 0, 0);",
                   "const fin = new Date(inicio.getTime() + 2 * 3600000);",
@@ -2064,7 +2064,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Fechas futuras aleatorias para no chocar con datos previos",
-                  "const dias = 60 + Math.floor(Math.random() * 300);",
+                  "const dias = 120;",
                   "const inicio = new Date(Date.now() + dias * 86400000);",
                   "inicio.setUTCHours(14, 0, 0, 0);",
                   "const fin = new Date(inicio.getTime() + 2 * 3600000);",
