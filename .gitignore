@@ -9,3 +9,9 @@ npm-debug.log*
 .DS_Store
 .vscode/
 .idea/
+
+# Reportes y artefactos de pruebas
+reports/
+*.tsbuildinfo
+frontend/vite.config.d.ts
+.scannerwork/

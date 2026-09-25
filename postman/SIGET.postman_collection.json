@@ -1,1 +1,3137 @@
-{"info":{"name":"SIGET API","schema":"https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},"variable":[{"key":"baseUrl","value":"http://localhost:3000"},{"key":"token","value":""},{"key":"adminToken","value":""},{"key":"userToken","value":""}],"item":[{"name":"Login admin","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"correo\": \"admin@siget.local\",\n  \"password\": \"Cambiar123!\"\n}"},"url":"{{baseUrl}}/auth/login"},"event":[{"listen":"test","script":{"exec":["pm.test('Login exitoso',()=>pm.expect(pm.response.code).to.be.oneOf([200,201]));","if(pm.response.code<300){pm.collectionVariables.set('adminToken',pm.response.json().access_token);}" ]}}]},{"name":"Listar equipos","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{adminToken}}"}],"url":"{{baseUrl}}/equipos"}},{"name":"Crear reserva","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{userToken}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"equipoId\": \"REEMPLAZAR_UUID\",\n  \"fechaInicio\": \"2026-10-10T08:00:00.000Z\",\n  \"fechaFin\": \"2026-10-10T16:00:00.000Z\",\n  \"motivo\": \"Presentación\"\n}"},"url":"{{baseUrl}}/reservas"}},{"name":"Aprobar reserva","request":{"method":"PUT","header":[{"key":"Authorization","value":"Bearer {{adminToken}}"}],"url":"{{baseUrl}}/reservas/REEMPLAZAR_UUID/aprobar"}},{"name":"Crear préstamo","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{adminToken}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"usuarioId\": \"REEMPLAZAR_UUID\",\n  \"equipoId\": \"REEMPLAZAR_UUID\",\n  \"fechaPrestamo\": \"2026-10-10T08:00:00.000Z\",\n  \"fechaLimite\": \"2026-10-11T16:00:00.000Z\"\n}"},"url":"{{baseUrl}}/prestamos"}},{"name":"Registrar devolución","request":{"method":"PUT","header":[{"key":"Authorization","value":"Bearer {{adminToken}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"condicionEquipo\": \"BUENO\"\n}"},"url":"{{baseUrl}}/prestamos/REEMPLAZAR_UUID/devolver"}},{"name":"Crear incidencia","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{token}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"equipoId\": \"REEMPLAZAR_UUID\",\n  \"titulo\": \"Falla\",\n  \"descripcion\": \"Detalle\",\n  \"severidad\": \"ALTA\"\n}"},"url":"{{baseUrl}}/incidencias"}},{"name":"Crear mantenimiento","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{adminToken}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"equipoId\": \"REEMPLAZAR_UUID\",\n  \"tecnicoId\": \"REEMPLAZAR_UUID\",\n  \"tipo\": \"CORRECTIVO\",\n  \"descripcion\": \"Diagnóstico\",\n  \"fechaInicio\": \"2026-10-10T08:00:00.000Z\"\n}"},"url":"{{baseUrl}}/mantenimientos"}}]}
+{
+  "info": {
+    "_postman_id": "2867fc9b-0f6c-47fe-bb52-37dd29b4c79b",
+    "name": "SIGET API — Automatización",
+    "description": "Colección de pruebas automatizadas de SIGET (Fase 1), alineada con los CP-01 a CP-30 del documento del equipo (E3). Ejecutar en orden: cada request deja en el ambiente los IDs del siguiente. Requiere la variable password.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00 Setup",
+      "description": "Inicia sesión con los 4 roles y crea un segundo usuario solicitante. Requiere la variable password (pásala con --env-var).",
+      "item": [
+        {
+          "name": "Login admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@siget.local\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-01 | login admin responde 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.environment.set('token_admin', body.access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login inventario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"inventario@siget.local\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-01 | login inventario responde 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.environment.set('token_inventario', body.access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"usuario@siget.local\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-01 | login usuario responde 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.environment.set('token_usuario', body.access_token);",
+                  "pm.environment.set('usuario_id', body.usuario.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login tecnico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"tecnico@siget.local\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-01 | login tecnico responde 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.environment.set('token_tecnico', body.access_token);",
+                  "pm.environment.set('tecnico_id', body.usuario.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear segundo usuario solicitante (para CP-15)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Usuario\",\n  \"apellido\": \"QA\",\n  \"correo\": \"{{correo_usuario2}}\",\n  \"password\": \"{{password}}\",\n  \"rol\": \"USUARIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('correo_usuario2', 'qa' + Date.now() + '@siget.local');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Setup | segundo usuario creado (201)', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login usuario 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{correo_usuario2}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-01 | login usuario 2 responde 201', () => pm.response.to.have.status(201));",
+                  "pm.environment.set('token_usuario2', pm.response.json().access_token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 Autenticación y seguridad",
+      "description": "",
+      "item": [
+        {
+          "name": "CP-02 Login con contraseña incorrecta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@siget.local\",\n  \"password\": \"ClaveIncorrecta123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-02 | Partición | credenciales inválidas rechazadas (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('CP-02 | no devuelve token', () => pm.expect(pm.response.json().access_token).to.be.undefined);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-03 A Contraseña de 7 caracteres",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@siget.local\",\n  \"password\": \"Abc123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-03 | Valor límite | 7 caracteres rechazado por validación (400)', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-03 B Contraseña de 8 caracteres",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@siget.local\",\n  \"password\": \"Abcd123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-03 | Valor límite | 8 caracteres supera la validación y llega a credenciales (401)', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-24 A Sin token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/equipos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-24 | Partición | sin token responde 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-24 B Token inválido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/equipos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "token-corrupto",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-24 | Partición | token corrupto responde 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-24 C Token válido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/equipos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-24 | Partición | token válido continúa (200)', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-25 Vigencia del JWT",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "profile"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('perfil disponible (200)', () => pm.response.to.have.status(200));",
+                  "const b64 = pm.environment.get('token_admin').split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+                  "const cjs = require('crypto-js');",
+                  "const payload = JSON.parse(cjs.enc.Base64.parse(b64 + '='.repeat((4 - b64.length % 4) % 4)).toString(cjs.enc.Utf8));",
+                  "pm.test('CP-25 | Valor límite | el JWT tiene fecha de expiración', () => pm.expect(payload.exp).to.be.a('number'));",
+                  "pm.test('CP-25 | Valor límite | vigencia máxima de 8 horas (28800 s)', () => pm.expect(payload.exp - payload.iat).to.be.at.most(28800));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Equipos",
+      "description": "",
+      "item": [
+        {
+          "name": "Listar categorías",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categorias",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categorias"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('categorías listadas (200)', () => pm.response.to.have.status(200));",
+                  "pm.environment.set('categoria_id', pm.response.json()[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-05 Crear equipo (Encargado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/equipos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoInventario\": \"{{codigo_inv}}\",\n  \"nombre\": \"Laptop de automatización\",\n  \"marca\": \"Dell\",\n  \"modelo\": \"Latitude 5440\",\n  \"numeroSerie\": \"{{serie}}\",\n  \"categoriaId\": \"{{categoria_id}}\",\n  \"ubicacion\": \"Laboratorio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Código y número de serie únicos en cada corrida",
+                  "const ts = Date.now();",
+                  "pm.environment.set('codigo_inv', 'QA-' + ts);",
+                  "pm.environment.set('serie', 'QA-SN-' + ts);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-05 | Partición | equipo creado (201)', () => pm.response.to.have.status(201));",
+                  "pm.test('CP-05 | equipo queda DISPONIBLE', () => pm.expect(pm.response.json().estado).to.eql('DISPONIBLE'));",
+                  "pm.environment.set('equipo_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-06 A Código de inventario duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/equipos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoInventario\": \"{{codigo_inv}}\",\n  \"nombre\": \"Laptop de automatización\",\n  \"marca\": \"Dell\",\n  \"modelo\": \"Latitude 5440\",\n  \"numeroSerie\": \"{{serie}}-B\",\n  \"categoriaId\": \"{{categoria_id}}\",\n  \"ubicacion\": \"Laboratorio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-06 | Partición | código de inventario duplicado rechazado (409)', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-06 B Número de serie duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/equipos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoInventario\": \"{{codigo_inv}}-B\",\n  \"nombre\": \"Laptop de automatización\",\n  \"marca\": \"Dell\",\n  \"modelo\": \"Latitude 5440\",\n  \"numeroSerie\": \"{{serie}}\",\n  \"categoriaId\": \"{{categoria_id}}\",\n  \"ubicacion\": \"Laboratorio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-06 | Partición | número de serie duplicado rechazado (409)', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-04 Crear equipo como Administrador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/equipos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoInventario\": \"{{codigo_inv}}-A\",\n  \"nombre\": \"Laptop de automatización\",\n  \"marca\": \"Dell\",\n  \"modelo\": \"Latitude 5440\",\n  \"numeroSerie\": \"{{serie}}-A\",\n  \"categoriaId\": \"{{categoria_id}}\",\n  \"ubicacion\": \"Laboratorio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-04 | Tabla de decisión | ADMINISTRADOR puede crear (201)', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-04 Crear equipo como Usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/equipos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoInventario\": \"{{codigo_inv}}\",\n  \"nombre\": \"Laptop de automatización\",\n  \"marca\": \"Dell\",\n  \"modelo\": \"Latitude 5440\",\n  \"numeroSerie\": \"{{serie}}\",\n  \"categoriaId\": \"{{categoria_id}}\",\n  \"ubicacion\": \"Laboratorio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-04 | Tabla de decisión | USUARIO recibe 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-04 Crear equipo como Técnico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/equipos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoInventario\": \"{{codigo_inv}}\",\n  \"nombre\": \"Laptop de automatización\",\n  \"marca\": \"Dell\",\n  \"modelo\": \"Latitude 5440\",\n  \"numeroSerie\": \"{{serie}}\",\n  \"categoriaId\": \"{{categoria_id}}\",\n  \"ubicacion\": \"Laboratorio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-04 | Tabla de decisión | TECNICO recibe 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CU-02 Actualizar ubicación",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/equipos/{{equipo_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos",
+                "{{equipo_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ubicacion\": \"Bodega TI\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CU-02 | equipo actualizado (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('CU-02 | ubicación persistida', () => pm.expect(pm.response.json().ubicacion).to.eql('Bodega TI'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-07 Filtro por estado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/equipos?estado=DISPONIBLE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "DISPONIBLE"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-07 | consulta por estado (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('CP-07 | todos DISPONIBLE', () => pm.response.json().forEach(e => pm.expect(e.estado).to.eql('DISPONIBLE')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-07 Filtro por categoría",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/equipos?categoriaId={{categoria_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos"
+              ],
+              "query": [
+                {
+                  "key": "categoriaId",
+                  "value": "{{categoria_id}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-07 | consulta por categoría (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('CP-07 | todos de la categoría', () => pm.response.json().forEach(e => pm.expect(e.categoriaId).to.eql(pm.environment.get('categoria_id'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-07 Búsqueda por texto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/equipos?buscar=Laptop",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos"
+              ],
+              "query": [
+                {
+                  "key": "buscar",
+                  "value": "Laptop"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-07 | búsqueda por texto (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('CP-07 | resultados coherentes con la búsqueda', () => pm.response.json().forEach(e =>",
+                  "  pm.expect((e.nombre + e.codigoInventario + e.numeroSerie).toLowerCase()).to.include('laptop')));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 Reservas",
+      "description": "",
+      "item": [
+        {
+          "name": "CP-13 Crear reserva a rechazar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": \"{{equipo_id}}\",\n  \"fechaInicio\": \"{{fecha_inicio_r}}\",\n  \"fechaFin\": \"{{fecha_fin_r}}\",\n  \"motivo\": \"Prueba funcional\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Fechas futuras aleatorias para no chocar con datos previos",
+                  "const dias = 60 + Math.floor(Math.random() * 300);",
+                  "const inicio = new Date(Date.now() + dias * 86400000);",
+                  "inicio.setUTCHours(14, 0, 0, 0);",
+                  "const fin = new Date(inicio.getTime() + 2 * 3600000);",
+                  "pm.environment.set('fecha_inicio_r', inicio.toISOString());",
+                  "pm.environment.set('fecha_fin_r', fin.toISOString());",
+                  "pm.environment.set('fecha_devolucion_tardia_r', new Date(fin.getTime() + 2 * 3600000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('reserva creada (201)', () => pm.response.to.have.status(201));",
+                  "pm.environment.set('reserva_rechazo_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-13 Rechazar reserva pendiente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas/{{reserva_rechazo_id}}/rechazar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas",
+                "{{reserva_rechazo_id}}",
+                "rechazar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observacionRespuesta\": \"No disponible por política interna\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-13 | Transición | PENDIENTE -> RECHAZADA', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql('RECHAZADA');",
+                  "});",
+                  "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
+                  "  header: { Authorization: 'Bearer ' + pm.environment.get('token_inventario') } }, (err, res) => {",
+                  "  pm.test('CP-13 | el equipo conserva DISPONIBLE', () => pm.expect(res.json().estado).to.eql('DISPONIBLE'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-08 Crear reserva válida",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": \"{{equipo_id}}\",\n  \"fechaInicio\": \"{{fecha_inicio}}\",\n  \"fechaFin\": \"{{fecha_fin}}\",\n  \"motivo\": \"Prueba funcional\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Fechas futuras aleatorias para no chocar con datos previos",
+                  "const dias = 60 + Math.floor(Math.random() * 300);",
+                  "const inicio = new Date(Date.now() + dias * 86400000);",
+                  "inicio.setUTCHours(14, 0, 0, 0);",
+                  "const fin = new Date(inicio.getTime() + 2 * 3600000);",
+                  "pm.environment.set('fecha_inicio', inicio.toISOString());",
+                  "pm.environment.set('fecha_fin', fin.toISOString());",
+                  "pm.environment.set('fecha_devolucion_tardia', new Date(fin.getTime() + 2 * 3600000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-08 | Partición | reserva creada (201) en PENDIENTE', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.expect(pm.response.json().estado).to.eql('PENDIENTE');",
+                  "});",
+                  "pm.environment.set('reserva_id', pm.response.json().id);",
+                  "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
+                  "  header: { Authorization: 'Bearer ' + pm.environment.get('token_usuario') } }, (err, res) => {",
+                  "  pm.test('CP-08 | el equipo conserva su estado hasta la aprobación', () => pm.expect(res.json().estado).to.eql('DISPONIBLE'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-10 Reserva con traslape",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": \"{{equipo_id}}\",\n  \"fechaInicio\": \"{{fecha_inicio}}\",\n  \"fechaFin\": \"{{fecha_fin}}\",\n  \"motivo\": \"Prueba funcional\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-10 | Tabla de decisión | rango solapado rechazado (409)', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-09 A Fin un segundo antes del inicio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": \"{{equipo_id}}\",\n  \"fechaInicio\": \"{{fecha_inicio}}\",\n  \"fechaFin\": \"{{fecha_fin_menos}}\",\n  \"motivo\": \"Prueba funcional\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('fecha_fin_menos', new Date(new Date(pm.environment.get('fecha_inicio')).getTime() - 1000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-09 | Valor límite | fin anterior al inicio rechazado (400)', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-09 B Fin igual al inicio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": \"{{equipo_id}}\",\n  \"fechaInicio\": \"{{fecha_inicio}}\",\n  \"fechaFin\": \"{{fecha_inicio}}\",\n  \"motivo\": \"Prueba funcional\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-09 | Valor límite | fin igual al inicio rechazado (400)', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-12 Aprobar reserva",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas/{{reserva_id}}/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas",
+                "{{reserva_id}}",
+                "aprobar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observacionRespuesta\": \"Aprobada para prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-12 | Transición | PENDIENTE -> APROBADA', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql('APROBADA');",
+                  "});",
+                  "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
+                  "  header: { Authorization: 'Bearer ' + pm.environment.get('token_inventario') } }, (err, res) => {",
+                  "  pm.test('CP-12 | equipo DISPONIBLE -> RESERVADO', () => pm.expect(res.json().estado).to.eql('RESERVADO'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CU-04 A4 Aprobar reserva ya aprobada",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas/{{reserva_id}}/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas",
+                "{{reserva_id}}",
+                "aprobar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CU-04 A4 | Transición inválida | no se aprueba dos veces (409)', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 Préstamos y devoluciones",
+      "description": "",
+      "item": [
+        {
+          "name": "CP-17 B Fecha límite igual a la de préstamo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/prestamos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "prestamos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": \"{{usuario_id}}\",\n  \"equipoId\": \"{{equipo_id}}\",\n  \"fechaPrestamo\": \"{{fecha_inicio}}\",\n  \"fechaLimite\": \"{{fecha_inicio}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-17 | Valor límite | fecha límite igual rechazada (400)', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-16 Préstamo desde reserva aprobada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/prestamos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "prestamos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservaId\": \"{{reserva_id}}\",\n  \"usuarioId\": \"{{usuario_id}}\",\n  \"equipoId\": \"{{equipo_id}}\",\n  \"fechaPrestamo\": \"{{fecha_inicio}}\",\n  \"fechaLimite\": \"{{fecha_fin}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-16 | Partición | préstamo registrado (201)', () => pm.response.to.have.status(201));",
+                  "pm.test('CP-16 | conserva quién entregó el equipo (RF-09)', () => pm.expect(pm.response.json().entregadoPorId).to.be.a('string'));",
+                  "pm.environment.set('prestamo_id', pm.response.json().id);",
+                  "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
+                  "  header: { Authorization: 'Bearer ' + pm.environment.get('token_inventario') } }, (err, res) => {",
+                  "  pm.test('CP-16 | equipo PRESTADO', () => pm.expect(res.json().estado).to.eql('PRESTADO'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-18 Segundo préstamo con uno ACTIVO",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/prestamos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "prestamos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": \"{{usuario_id}}\",\n  \"equipoId\": \"{{equipo_id}}\",\n  \"fechaPrestamo\": \"{{fecha_inicio}}\",\n  \"fechaLimite\": \"{{fecha_fin}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-18 | Tabla de decisión | préstamo ACTIVO bloquea otro (409)', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-19 C / CP-20 Devolución tardía en buen estado",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/prestamos/{{prestamo_id}}/devolver",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "prestamos",
+                "{{prestamo_id}}",
+                "devolver"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fechaDevolucion\": \"{{fecha_devolucion_tardia}}\",\n  \"condicionEquipo\": \"BUENO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-19 | devolución registrada (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('CP-19 | Valor límite | después del límite => esTardia=true', () => pm.expect(pm.response.json().esTardia).to.eql(true));",
+                  "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
+                  "  header: { Authorization: 'Bearer ' + pm.environment.get('token_inventario') } }, (err, res) => {",
+                  "  pm.test('CP-20 | Tabla de decisión | BUENO => equipo DISPONIBLE', () => pm.expect(res.json().estado).to.eql('DISPONIBLE'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CU-06 A1 Devolver préstamo ya devuelto",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/prestamos/{{prestamo_id}}/devolver",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "prestamos",
+                "{{prestamo_id}}",
+                "devolver"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"condicionEquipo\": \"BUENO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CU-06 A1 | Transición inválida | no se devuelve dos veces (409)', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 Cancelación de reservas",
+      "description": "",
+      "item": [
+        {
+          "name": "Crear reserva pendiente (para CP-15)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": \"{{equipo_id}}\",\n  \"fechaInicio\": \"{{fecha_inicio_p}}\",\n  \"fechaFin\": \"{{fecha_fin_p}}\",\n  \"motivo\": \"Prueba funcional\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Fechas futuras aleatorias para no chocar con datos previos",
+                  "const dias = 60 + Math.floor(Math.random() * 300);",
+                  "const inicio = new Date(Date.now() + dias * 86400000);",
+                  "inicio.setUTCHours(14, 0, 0, 0);",
+                  "const fin = new Date(inicio.getTime() + 2 * 3600000);",
+                  "pm.environment.set('fecha_inicio_p', inicio.toISOString());",
+                  "pm.environment.set('fecha_fin_p', fin.toISOString());",
+                  "pm.environment.set('fecha_devolucion_tardia_p', new Date(fin.getTime() + 2 * 3600000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('reserva pendiente creada (201)', () => pm.response.to.have.status(201));",
+                  "pm.environment.set('reserva_pendiente_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-15 Otro usuario intenta cancelar",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reservas/{{reserva_pendiente_id}}/cancelar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas",
+                "{{reserva_pendiente_id}}",
+                "cancelar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario2}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-15 | Tabla de decisión | otro USUARIO recibe 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-14 Crear reserva",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": \"{{equipo_id}}\",\n  \"fechaInicio\": \"{{fecha_inicio_c}}\",\n  \"fechaFin\": \"{{fecha_fin_c}}\",\n  \"motivo\": \"Prueba funcional\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Fechas futuras aleatorias para no chocar con datos previos",
+                  "const dias = 60 + Math.floor(Math.random() * 300);",
+                  "const inicio = new Date(Date.now() + dias * 86400000);",
+                  "inicio.setUTCHours(14, 0, 0, 0);",
+                  "const fin = new Date(inicio.getTime() + 2 * 3600000);",
+                  "pm.environment.set('fecha_inicio_c', inicio.toISOString());",
+                  "pm.environment.set('fecha_fin_c', fin.toISOString());",
+                  "pm.environment.set('fecha_devolucion_tardia_c', new Date(fin.getTime() + 2 * 3600000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('reserva creada (201)', () => pm.response.to.have.status(201));",
+                  "pm.environment.set('reserva_cancel_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-14 Aprobar reserva",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas/{{reserva_cancel_id}}/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas",
+                "{{reserva_cancel_id}}",
+                "aprobar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-14 | reserva APROBADA', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql('APROBADA');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-14 / CP-15 Propietario cancela reserva aprobada",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reservas/{{reserva_cancel_id}}/cancelar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas",
+                "{{reserva_cancel_id}}",
+                "cancelar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-14 | Transición | APROBADA -> CANCELADA (CP-15: el propietario puede cancelar)', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql('CANCELADA');",
+                  "});",
+                  "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
+                  "  header: { Authorization: 'Bearer ' + pm.environment.get('token_usuario') } }, (err, res) => {",
+                  "  pm.test('CP-14 | equipo RESERVADO -> DISPONIBLE', () => pm.expect(res.json().estado).to.eql('DISPONIBLE'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 Mantenimiento",
+      "description": "",
+      "item": [
+        {
+          "name": "CP-22 Crear orden de mantenimiento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/mantenimientos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mantenimientos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": \"{{equipo_id}}\",\n  \"tecnicoId\": \"{{tecnico_id}}\",\n  \"tipo\": \"CORRECTIVO\",\n  \"descripcion\": \"Revisión de fuente\",\n  \"fechaInicio\": \"{{$isoTimestamp}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-22 | orden creada (201) en PENDIENTE', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.expect(pm.response.json().estado).to.eql('PENDIENTE');",
+                  "});",
+                  "pm.environment.set('mantenimiento_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CU-08 A2 Finalizar sin iniciar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/mantenimientos/{{mantenimiento_id}}/finalizar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mantenimientos",
+                "{{mantenimiento_id}}",
+                "finalizar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CU-08 A2 | Transición inválida | debe iniciar antes de finalizar (409)', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-22 Iniciar mantenimiento",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/mantenimientos/{{mantenimiento_id}}/iniciar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mantenimientos",
+                "{{mantenimiento_id}}",
+                "iniciar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-22 | Transición | PENDIENTE -> EN_PROCESO', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql('EN_PROCESO');",
+                  "});",
+                  "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
+                  "  header: { Authorization: 'Bearer ' + pm.environment.get('token_tecnico') } }, (err, res) => {",
+                  "  pm.test('CP-22 | equipo pasa a MANTENIMIENTO', () => pm.expect(res.json().estado).to.eql('MANTENIMIENTO'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-22 Finalizar mantenimiento",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/mantenimientos/{{mantenimiento_id}}/finalizar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mantenimientos",
+                "{{mantenimiento_id}}",
+                "finalizar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"diagnostico\": \"Fuente reemplazada\",\n  \"costo\": 250.0,\n  \"observaciones\": \"Prueba QA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-22 | Transición | EN_PROCESO -> FINALIZADO', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql('FINALIZADO');",
+                  "});",
+                  "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
+                  "  header: { Authorization: 'Bearer ' + pm.environment.get('token_tecnico') } }, (err, res) => {",
+                  "  pm.test('CP-22 | equipo vuelve a DISPONIBLE', () => pm.expect(res.json().estado).to.eql('DISPONIBLE'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CU-08 A3 Finalizar de nuevo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/mantenimientos/{{mantenimiento_id}}/finalizar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mantenimientos",
+                "{{mantenimiento_id}}",
+                "finalizar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CU-08 A3 | Transición inválida | ya finalizado (409)', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 Incidencias",
+      "description": "",
+      "item": [
+        {
+          "name": "CP-21 Incidencia no crítica (BAJA)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": \"{{equipo_id}}\",\n  \"titulo\": \"Tecla floja\",\n  \"descripcion\": \"La tecla F5 está floja\",\n  \"severidad\": \"BAJA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-21 | incidencia BAJA registrada (201)', () => pm.response.to.have.status(201));",
+                  "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
+                  "  header: { Authorization: 'Bearer ' + pm.environment.get('token_tecnico') } }, (err, res) => {",
+                  "  pm.test('CP-21 | Partición | severidad no crítica mantiene DISPONIBLE', () => pm.expect(res.json().estado).to.eql('DISPONIBLE'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-21 Incidencia CRITICA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": \"{{equipo_id}}\",\n  \"titulo\": \"Falla crítica\",\n  \"descripcion\": \"No enciende\",\n  \"severidad\": \"CRITICA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-21 | incidencia CRITICA registrada (201)', () => pm.response.to.have.status(201));",
+                  "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
+                  "  header: { Authorization: 'Bearer ' + pm.environment.get('token_tecnico') } }, (err, res) => {",
+                  "  pm.test('CP-21 | Transición | equipo DISPONIBLE -> MANTENIMIENTO', () => pm.expect(res.json().estado).to.eql('MANTENIMIENTO'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-11 Reservar equipo en MANTENIMIENTO",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": \"{{equipo_id}}\",\n  \"fechaInicio\": \"{{fecha_inicio_m}}\",\n  \"fechaFin\": \"{{fecha_fin_m}}\",\n  \"motivo\": \"Prueba funcional\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Fechas futuras aleatorias para no chocar con datos previos",
+                  "const dias = 60 + Math.floor(Math.random() * 300);",
+                  "const inicio = new Date(Date.now() + dias * 86400000);",
+                  "inicio.setUTCHours(14, 0, 0, 0);",
+                  "const fin = new Date(inicio.getTime() + 2 * 3600000);",
+                  "pm.environment.set('fecha_inicio_m', inicio.toISOString());",
+                  "pm.environment.set('fecha_fin_m', fin.toISOString());",
+                  "pm.environment.set('fecha_devolucion_tardia_m', new Date(fin.getTime() + 2 * 3600000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-11 | Tabla de decisión | equipo no DISPONIBLE rechazado (409)', () => pm.response.to.have.status(409));",
+                  "pm.test('CP-11 | el mensaje indica el estado', () => pm.expect(pm.response.text()).to.include('MANTENIMIENTO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "RF-13 Verificar historial completo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/equipos/{{equipo_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos",
+                "{{equipo_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const eq = pm.response.json();",
+                  "pm.test('RF-13 | historial registra cada transición en orden', () => {",
+                  "  const pasos = eq.historial.map(h => h.estadoAnterior + '>' + h.estadoNuevo).reverse();",
+                  "  pm.expect(pasos).to.eql([",
+                  "    'DISPONIBLE>RESERVADO',     // CP-12 aprobación",
+                  "    'RESERVADO>PRESTADO',       // CP-16 préstamo",
+                  "    'PRESTADO>DISPONIBLE',      // CP-19/20 devolución",
+                  "    'DISPONIBLE>RESERVADO',     // CP-14 aprobación",
+                  "    'RESERVADO>DISPONIBLE',     // CP-14 cancelación",
+                  "    'DISPONIBLE>MANTENIMIENTO', // CP-22 inicio",
+                  "    'MANTENIMIENTO>DISPONIBLE', // CP-22 finalización",
+                  "    'DISPONIBLE>MANTENIMIENTO'  // CP-21 incidencia crítica",
+                  "  ]);",
+                  "});",
+                  "pm.test('RF-13 | cada registro guarda motivo, usuario y fecha', () => eq.historial.forEach(h => {",
+                  "  pm.expect(h.motivo).to.be.a('string'); pm.expect(h.usuarioId).to.be.a('string'); pm.expect(h.fecha).to.be.a('string');",
+                  "}));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 Reportes y control de acceso",
+      "description": "",
+      "item": [
+        {
+          "name": "CP-23 Resumen",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reportes/resumen",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reportes",
+                "resumen"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-23 | resumen (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('CP-23 | JSON estructurado con métricas', () => pm.expect(pm.response.json()).to.include.all.keys('totalEquipos', 'equiposDisponibles', 'equiposMantenimiento', 'prestamosAtrasados', 'reservasPendientes', 'incidenciasAbiertas'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-23 Equipos por estado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reportes/equipos-por-estado",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reportes",
+                "equipos-por-estado"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-23 | equipos por estado (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('CP-23 | devuelve una lista', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-23 Mantenimientos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reportes/mantenimientos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reportes",
+                "mantenimientos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-23 | reporte de mantenimientos (200)', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-23 Préstamos atrasados (Encargado)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reportes/prestamos-atrasados",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reportes",
+                "prestamos-atrasados"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-23 | Encargado consulta atrasados (200)', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP-23 Préstamos atrasados (Usuario)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reportes/prestamos-atrasados",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reportes",
+                "prestamos-atrasados"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-23 | USUARIO no consulta atrasados (403)', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "RNF-02 Listar usuarios como Encargado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_inventario}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('RNF-02 | ENCARGADO no administra usuarios (403)', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "RNF-02 Listar todas las reservas como Usuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reservas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('RNF-02 | USUARIO no lista todas las reservas (403)', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 Hallazgos",
+      "description": "Pruebas que FALLAN mientras el defecto exista. Cada fallo confirmado se registra como DEF-xx.",
+      "item": [
+        {
+          "name": "H-01 Reporte de reservas expone contraseñas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reportes/reservas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reportes",
+                "reservas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_usuario}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('RF-14 | reporte de reservas (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('RNF-02 | la respuesta no expone passwordHash', () => pm.expect(pm.response.text()).to.not.include('passwordHash'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H-02 Técnico cancela reserva ajena",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reservas/{{reserva_pendiente_id}}/cancelar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas",
+                "{{reserva_pendiente_id}}",
+                "cancelar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-15 / RF-02 | un TECNICO no puede cancelar reservas ajenas (403)', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H-03 Técnico consulta préstamo ajeno",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/prestamos/{{prestamo_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "prestamos",
+                "{{prestamo_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('RF-02 | no se puede consultar un préstamo ajeno (403)', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H-04 Id con formato inválido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/equipos/no-es-uuid",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "equipos",
+                "no-es-uuid"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CU-02 A2 | id inválido responde 400 o 404, no 500', () => pm.expect(pm.response.code).to.be.oneOf([400, 404]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
