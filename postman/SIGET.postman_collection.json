@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "2867fc9b-0f6c-47fe-bb52-37dd29b4c79b",
     "name": "SIGET API — Automatización",
-    "description": "Colección de pruebas automatizadas de SIGET (Fase 1), alineada con los CP-01 a CP-30 del documento del equipo (E3). Ejecutar en orden: cada request deja en el ambiente los IDs del siguiente. Requiere la variable password.",
+    "description": "Colección de pruebas automatizadas de SIGET (Fase 1), alineada con los CP-01 a CP-30 del documento del equipo (E3). Ejecutar en orden: cada request deja en el ambiente los IDs del siguiente. Requiere la variable password.\n\nFase 2 (E11): cada solicitud valida código de respuesta, esquema JSON (pm.response.to.have.jsonSchema) y contenido. Los esquemas se definen una sola vez como variables de colección schema_*.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -51,7 +51,8 @@
                 "exec": [
                   "pm.test('CP-01 | login admin responde 201', () => pm.response.to.have.status(201));",
                   "const body = pm.response.json();",
-                  "pm.environment.set('token_admin', body.access_token);"
+                  "pm.environment.set('token_admin', body.access_token);",
+                  "pm.test('E11 | Esquema | respuesta de login con token JWT y usuario sin passwordHash', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_login'))));"
                 ]
               }
             }
@@ -98,7 +99,8 @@
                 "exec": [
                   "pm.test('CP-01 | login inventario responde 201', () => pm.response.to.have.status(201));",
                   "const body = pm.response.json();",
-                  "pm.environment.set('token_inventario', body.access_token);"
+                  "pm.environment.set('token_inventario', body.access_token);",
+                  "pm.test('E11 | Esquema | respuesta de login con token JWT y usuario sin passwordHash', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_login'))));"
                 ]
               }
             }
@@ -146,7 +148,8 @@
                   "pm.test('CP-01 | login usuario responde 201', () => pm.response.to.have.status(201));",
                   "const body = pm.response.json();",
                   "pm.environment.set('token_usuario', body.access_token);",
-                  "pm.environment.set('usuario_id', body.usuario.id);"
+                  "pm.environment.set('usuario_id', body.usuario.id);",
+                  "pm.test('E11 | Esquema | respuesta de login con token JWT y usuario sin passwordHash', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_login'))));"
                 ]
               }
             }
@@ -194,7 +197,8 @@
                   "pm.test('CP-01 | login tecnico responde 201', () => pm.response.to.have.status(201));",
                   "const body = pm.response.json();",
                   "pm.environment.set('token_tecnico', body.access_token);",
-                  "pm.environment.set('tecnico_id', body.usuario.id);"
+                  "pm.environment.set('tecnico_id', body.usuario.id);",
+                  "pm.test('E11 | Esquema | respuesta de login con token JWT y usuario sin passwordHash', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_login'))));"
                 ]
               }
             }
@@ -254,7 +258,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Setup | segundo usuario creado (201)', () => pm.response.to.have.status(201));"
+                  "pm.test('Setup | segundo usuario creado (201)', () => pm.response.to.have.status(201));",
+                  "pm.test('E11 | Esquema | usuario sin passwordHash', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_usuario'))));"
                 ]
               }
             }
@@ -300,7 +305,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-01 | login usuario 2 responde 201', () => pm.response.to.have.status(201));",
-                  "pm.environment.set('token_usuario2', pm.response.json().access_token);"
+                  "pm.environment.set('token_usuario2', pm.response.json().access_token);",
+                  "pm.test('E11 | Esquema | respuesta de login con token JWT y usuario sin passwordHash', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_login'))));"
                 ]
               }
             }
@@ -352,7 +358,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-02 | Partición | credenciales inválidas rechazadas (401)', () => pm.response.to.have.status(401));",
-                  "pm.test('CP-02 | no devuelve token', () => pm.expect(pm.response.json().access_token).to.be.undefined);"
+                  "pm.test('CP-02 | no devuelve token', () => pm.expect(pm.response.json().access_token).to.be.undefined);",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -397,7 +404,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-03 | Valor límite | 7 caracteres rechazado por validación (400)', () => pm.response.to.have.status(400));"
+                  "pm.test('CP-03 | Valor límite | 7 caracteres rechazado por validación (400)', () => pm.response.to.have.status(400));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -442,7 +450,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-03 | Valor límite | 8 caracteres supera la validación y llega a credenciales (401)', () => pm.response.to.have.status(401));"
+                  "pm.test('CP-03 | Valor límite | 8 caracteres supera la validación y llega a credenciales (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -472,7 +481,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-24 | Partición | sin token responde 401', () => pm.response.to.have.status(401));"
+                  "pm.test('CP-24 | Partición | sin token responde 401', () => pm.response.to.have.status(401));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -509,7 +519,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-24 | Partición | token corrupto responde 401', () => pm.response.to.have.status(401));"
+                  "pm.test('CP-24 | Partición | token corrupto responde 401', () => pm.response.to.have.status(401));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -546,7 +557,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-24 | Partición | token válido continúa (200)', () => pm.response.to.have.status(200));"
+                  "pm.test('CP-24 | Partición | token válido continúa (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('E11 | Esquema | lista de equipos con categoría', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_equipos'))));"
                 ]
               }
             }
@@ -589,7 +601,8 @@
                   "const cjs = require('crypto-js');",
                   "const payload = JSON.parse(cjs.enc.Base64.parse(b64 + '='.repeat((4 - b64.length % 4) % 4)).toString(cjs.enc.Utf8));",
                   "pm.test('CP-25 | Valor límite | el JWT tiene fecha de expiración', () => pm.expect(payload.exp).to.be.a('number'));",
-                  "pm.test('CP-25 | Valor límite | vigencia máxima de 8 horas (28800 s)', () => pm.expect(payload.exp - payload.iat).to.be.at.most(28800));"
+                  "pm.test('CP-25 | Valor límite | vigencia máxima de 8 horas (28800 s)', () => pm.expect(payload.exp - payload.iat).to.be.at.most(28800));",
+                  "pm.test('E11 | Esquema | usuario sin passwordHash', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_usuario'))));"
                 ]
               }
             }
@@ -633,7 +646,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('categorías listadas (200)', () => pm.response.to.have.status(200));",
-                  "pm.environment.set('categoria_id', pm.response.json()[0].id);"
+                  "pm.environment.set('categoria_id', pm.response.json()[0].id);",
+                  "pm.test('E11 | Esquema | lista de categorías', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_categorias'))));"
                 ]
               }
             }
@@ -698,7 +712,8 @@
                 "exec": [
                   "pm.test('CP-05 | Partición | equipo creado (201)', () => pm.response.to.have.status(201));",
                   "pm.test('CP-05 | equipo queda DISPONIBLE', () => pm.expect(pm.response.json().estado).to.eql('DISPONIBLE'));",
-                  "pm.environment.set('equipo_id', pm.response.json().id);"
+                  "pm.environment.set('equipo_id', pm.response.json().id);",
+                  "pm.test('E11 | Esquema | equipo', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_equipo'))));"
                 ]
               }
             }
@@ -749,7 +764,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-06 | Partición | código de inventario duplicado rechazado (409)', () => pm.response.to.have.status(409));"
+                  "pm.test('CP-06 | Partición | código de inventario duplicado rechazado (409)', () => pm.response.to.have.status(409));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -800,7 +816,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-06 | Partición | número de serie duplicado rechazado (409)', () => pm.response.to.have.status(409));"
+                  "pm.test('CP-06 | Partición | número de serie duplicado rechazado (409)', () => pm.response.to.have.status(409));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -851,7 +868,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-04 | Tabla de decisión | ADMINISTRADOR puede crear (201)', () => pm.response.to.have.status(201));"
+                  "pm.test('CP-04 | Tabla de decisión | ADMINISTRADOR puede crear (201)', () => pm.response.to.have.status(201));",
+                  "pm.test('E11 | Esquema | equipo', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_equipo'))));"
                 ]
               }
             }
@@ -902,7 +920,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-04 | Tabla de decisión | USUARIO recibe 403', () => pm.response.to.have.status(403));"
+                  "pm.test('CP-04 | Tabla de decisión | USUARIO recibe 403', () => pm.response.to.have.status(403));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -953,7 +972,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-04 | Tabla de decisión | TECNICO recibe 403', () => pm.response.to.have.status(403));"
+                  "pm.test('CP-04 | Tabla de decisión | TECNICO recibe 403', () => pm.response.to.have.status(403));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -1006,7 +1026,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CU-02 | equipo actualizado (200)', () => pm.response.to.have.status(200));",
-                  "pm.test('CU-02 | ubicación persistida', () => pm.expect(pm.response.json().ubicacion).to.eql('Bodega TI'));"
+                  "pm.test('CU-02 | ubicación persistida', () => pm.expect(pm.response.json().ubicacion).to.eql('Bodega TI'));",
+                  "pm.test('E11 | Esquema | equipo', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_equipo'))));"
                 ]
               }
             }
@@ -1050,7 +1071,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-07 | consulta por estado (200)', () => pm.response.to.have.status(200));",
-                  "pm.test('CP-07 | todos DISPONIBLE', () => pm.response.json().forEach(e => pm.expect(e.estado).to.eql('DISPONIBLE')));"
+                  "pm.test('CP-07 | todos DISPONIBLE', () => pm.response.json().forEach(e => pm.expect(e.estado).to.eql('DISPONIBLE')));",
+                  "pm.test('E11 | Esquema | lista de equipos con categoría', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_equipos'))));"
                 ]
               }
             }
@@ -1094,7 +1116,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-07 | consulta por categoría (200)', () => pm.response.to.have.status(200));",
-                  "pm.test('CP-07 | todos de la categoría', () => pm.response.json().forEach(e => pm.expect(e.categoriaId).to.eql(pm.environment.get('categoria_id'))));"
+                  "pm.test('CP-07 | todos de la categoría', () => pm.response.json().forEach(e => pm.expect(e.categoriaId).to.eql(pm.environment.get('categoria_id'))));",
+                  "pm.test('E11 | Esquema | lista de equipos con categoría', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_equipos'))));"
                 ]
               }
             }
@@ -1139,7 +1162,8 @@
                 "exec": [
                   "pm.test('CP-07 | búsqueda por texto (200)', () => pm.response.to.have.status(200));",
                   "pm.test('CP-07 | resultados coherentes con la búsqueda', () => pm.response.json().forEach(e =>",
-                  "  pm.expect((e.nombre + e.codigoInventario + e.numeroSerie).toLowerCase()).to.include('laptop')));"
+                  "  pm.expect((e.nombre + e.codigoInventario + e.numeroSerie).toLowerCase()).to.include('laptop')));",
+                  "pm.test('E11 | Esquema | lista de equipos con categoría', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_equipos'))));"
                 ]
               }
             }
@@ -1213,7 +1237,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('reserva creada (201)', () => pm.response.to.have.status(201));",
-                  "pm.environment.set('reserva_rechazo_id', pm.response.json().id);"
+                  "pm.environment.set('reserva_rechazo_id', pm.response.json().id);",
+                  "pm.test('E11 | Esquema | reserva creada con equipo y usuario sin passwordHash', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_reserva_creada'))));"
                 ]
               }
             }
@@ -1273,7 +1298,8 @@
                   "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
                   "  header: { Authorization: 'Bearer ' + pm.environment.get('token_inventario') } }, (err, res) => {",
                   "  pm.test('CP-13 | el equipo conserva DISPONIBLE', () => pm.expect(res.json().estado).to.eql('DISPONIBLE'));",
-                  "});"
+                  "});",
+                  "pm.test('E11 | Esquema | reserva', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_reserva'))));"
                 ]
               }
             }
@@ -1348,7 +1374,8 @@
                   "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
                   "  header: { Authorization: 'Bearer ' + pm.environment.get('token_usuario') } }, (err, res) => {",
                   "  pm.test('CP-08 | el equipo conserva su estado hasta la aprobación', () => pm.expect(res.json().estado).to.eql('DISPONIBLE'));",
-                  "});"
+                  "});",
+                  "pm.test('E11 | Esquema | reserva creada con equipo y usuario sin passwordHash', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_reserva_creada'))));"
                 ]
               }
             }
@@ -1399,7 +1426,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-10 | Tabla de decisión | rango solapado rechazado (409)', () => pm.response.to.have.status(409));"
+                  "pm.test('CP-10 | Tabla de decisión | rango solapado rechazado (409)', () => pm.response.to.have.status(409));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -1459,7 +1487,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-09 | Valor límite | fin anterior al inicio rechazado (400)', () => pm.response.to.have.status(400));"
+                  "pm.test('CP-09 | Valor límite | fin anterior al inicio rechazado (400)', () => pm.response.to.have.status(400));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -1510,7 +1539,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-09 | Valor límite | fin igual al inicio rechazado (400)', () => pm.response.to.have.status(400));"
+                  "pm.test('CP-09 | Valor límite | fin igual al inicio rechazado (400)', () => pm.response.to.have.status(400));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -1570,7 +1600,8 @@
                   "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
                   "  header: { Authorization: 'Bearer ' + pm.environment.get('token_inventario') } }, (err, res) => {",
                   "  pm.test('CP-12 | equipo DISPONIBLE -> RESERVADO', () => pm.expect(res.json().estado).to.eql('RESERVADO'));",
-                  "});"
+                  "});",
+                  "pm.test('E11 | Esquema | reserva', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_reserva'))));"
                 ]
               }
             }
@@ -1623,7 +1654,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CU-04 A4 | Transición inválida | no se aprueba dos veces (409)', () => pm.response.to.have.status(409));"
+                  "pm.test('CU-04 A4 | Transición inválida | no se aprueba dos veces (409)', () => pm.response.to.have.status(409));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -1680,7 +1712,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-17 | Valor límite | fecha límite igual rechazada (400)', () => pm.response.to.have.status(400));"
+                  "pm.test('CP-17 | Valor límite | fecha límite igual rechazada (400)', () => pm.response.to.have.status(400));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -1737,7 +1770,8 @@
                   "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
                   "  header: { Authorization: 'Bearer ' + pm.environment.get('token_inventario') } }, (err, res) => {",
                   "  pm.test('CP-16 | equipo PRESTADO', () => pm.expect(res.json().estado).to.eql('PRESTADO'));",
-                  "});"
+                  "});",
+                  "pm.test('E11 | Esquema | préstamo', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_prestamo'))));"
                 ]
               }
             }
@@ -1788,7 +1822,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-18 | Tabla de decisión | préstamo ACTIVO bloquea otro (409)', () => pm.response.to.have.status(409));"
+                  "pm.test('CP-18 | Tabla de decisión | préstamo ACTIVO bloquea otro (409)', () => pm.response.to.have.status(409));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -1846,7 +1881,8 @@
                   "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
                   "  header: { Authorization: 'Bearer ' + pm.environment.get('token_inventario') } }, (err, res) => {",
                   "  pm.test('CP-20 | Tabla de decisión | BUENO => equipo DISPONIBLE', () => pm.expect(res.json().estado).to.eql('DISPONIBLE'));",
-                  "});"
+                  "});",
+                  "pm.test('E11 | Esquema | devolución con indicador de tardía', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_devolucion'))));"
                 ]
               }
             }
@@ -1899,7 +1935,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CU-06 A1 | Transición inválida | no se devuelve dos veces (409)', () => pm.response.to.have.status(409));"
+                  "pm.test('CU-06 A1 | Transición inválida | no se devuelve dos veces (409)', () => pm.response.to.have.status(409));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -1973,7 +2010,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('reserva pendiente creada (201)', () => pm.response.to.have.status(201));",
-                  "pm.environment.set('reserva_pendiente_id', pm.response.json().id);"
+                  "pm.environment.set('reserva_pendiente_id', pm.response.json().id);",
+                  "pm.test('E11 | Esquema | reserva creada con equipo y usuario sin passwordHash', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_reserva_creada'))));"
                 ]
               }
             }
@@ -2012,7 +2050,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-15 | Tabla de decisión | otro USUARIO recibe 403', () => pm.response.to.have.status(403));"
+                  "pm.test('CP-15 | Tabla de decisión | otro USUARIO recibe 403', () => pm.response.to.have.status(403));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -2080,7 +2119,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('reserva creada (201)', () => pm.response.to.have.status(201));",
-                  "pm.environment.set('reserva_cancel_id', pm.response.json().id);"
+                  "pm.environment.set('reserva_cancel_id', pm.response.json().id);",
+                  "pm.test('E11 | Esquema | reserva creada con equipo y usuario sin passwordHash', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_reserva_creada'))));"
                 ]
               }
             }
@@ -2136,7 +2176,8 @@
                   "pm.test('CP-14 | reserva APROBADA', () => {",
                   "  pm.response.to.have.status(200);",
                   "  pm.expect(pm.response.json().estado).to.eql('APROBADA');",
-                  "});"
+                  "});",
+                  "pm.test('E11 | Esquema | reserva', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_reserva'))));"
                 ]
               }
             }
@@ -2182,7 +2223,8 @@
                   "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
                   "  header: { Authorization: 'Bearer ' + pm.environment.get('token_usuario') } }, (err, res) => {",
                   "  pm.test('CP-14 | equipo RESERVADO -> DISPONIBLE', () => pm.expect(res.json().estado).to.eql('DISPONIBLE'));",
-                  "});"
+                  "});",
+                  "pm.test('E11 | Esquema | reserva', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_reserva'))));"
                 ]
               }
             }
@@ -2243,7 +2285,8 @@
                   "  pm.response.to.have.status(201);",
                   "  pm.expect(pm.response.json().estado).to.eql('PENDIENTE');",
                   "});",
-                  "pm.environment.set('mantenimiento_id', pm.response.json().id);"
+                  "pm.environment.set('mantenimiento_id', pm.response.json().id);",
+                  "pm.test('E11 | Esquema | orden de mantenimiento', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_mantenimiento'))));"
                 ]
               }
             }
@@ -2296,7 +2339,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CU-08 A2 | Transición inválida | debe iniciar antes de finalizar (409)', () => pm.response.to.have.status(409));"
+                  "pm.test('CU-08 A2 | Transición inválida | debe iniciar antes de finalizar (409)', () => pm.response.to.have.status(409));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -2342,7 +2386,8 @@
                   "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
                   "  header: { Authorization: 'Bearer ' + pm.environment.get('token_tecnico') } }, (err, res) => {",
                   "  pm.test('CP-22 | equipo pasa a MANTENIMIENTO', () => pm.expect(res.json().estado).to.eql('MANTENIMIENTO'));",
-                  "});"
+                  "});",
+                  "pm.test('E11 | Esquema | orden de mantenimiento', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_mantenimiento'))));"
                 ]
               }
             }
@@ -2402,7 +2447,8 @@
                   "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
                   "  header: { Authorization: 'Bearer ' + pm.environment.get('token_tecnico') } }, (err, res) => {",
                   "  pm.test('CP-22 | equipo vuelve a DISPONIBLE', () => pm.expect(res.json().estado).to.eql('DISPONIBLE'));",
-                  "});"
+                  "});",
+                  "pm.test('E11 | Esquema | orden de mantenimiento', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_mantenimiento'))));"
                 ]
               }
             }
@@ -2455,7 +2501,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CU-08 A3 | Transición inválida | ya finalizado (409)', () => pm.response.to.have.status(409));"
+                  "pm.test('CU-08 A3 | Transición inválida | ya finalizado (409)', () => pm.response.to.have.status(409));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -2516,7 +2563,8 @@
                   "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
                   "  header: { Authorization: 'Bearer ' + pm.environment.get('token_tecnico') } }, (err, res) => {",
                   "  pm.test('CP-21 | Partición | severidad no crítica mantiene DISPONIBLE', () => pm.expect(res.json().estado).to.eql('DISPONIBLE'));",
-                  "});"
+                  "});",
+                  "pm.test('E11 | Esquema | incidencia', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_incidencia'))));"
                 ]
               }
             }
@@ -2571,7 +2619,8 @@
                   "pm.sendRequest({ url: pm.environment.get('base_url') + '/equipos/' + pm.environment.get('equipo_id'),",
                   "  header: { Authorization: 'Bearer ' + pm.environment.get('token_tecnico') } }, (err, res) => {",
                   "  pm.test('CP-21 | Transición | equipo DISPONIBLE -> MANTENIMIENTO', () => pm.expect(res.json().estado).to.eql('MANTENIMIENTO'));",
-                  "});"
+                  "});",
+                  "pm.test('E11 | Esquema | incidencia', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_incidencia'))));"
                 ]
               }
             }
@@ -2639,7 +2688,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-11 | Tabla de decisión | equipo no DISPONIBLE rechazado (409)', () => pm.response.to.have.status(409));",
-                  "pm.test('CP-11 | el mensaje indica el estado', () => pm.expect(pm.response.text()).to.include('MANTENIMIENTO'));"
+                  "pm.test('CP-11 | el mensaje indica el estado', () => pm.expect(pm.response.text()).to.include('MANTENIMIENTO'));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -2693,7 +2743,8 @@
                   "});",
                   "pm.test('RF-13 | cada registro guarda motivo, usuario y fecha', () => eq.historial.forEach(h => {",
                   "  pm.expect(h.motivo).to.be.a('string'); pm.expect(h.usuarioId).to.be.a('string'); pm.expect(h.fecha).to.be.a('string');",
-                  "}));"
+                  "}));",
+                  "pm.test('E11 | Esquema | equipo con categoría e historial de estados', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_equipo_detalle'))));"
                 ]
               }
             }
@@ -2738,7 +2789,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-23 | resumen (200)', () => pm.response.to.have.status(200));",
-                  "pm.test('CP-23 | JSON estructurado con métricas', () => pm.expect(pm.response.json()).to.include.all.keys('totalEquipos', 'equiposDisponibles', 'equiposMantenimiento', 'prestamosAtrasados', 'reservasPendientes', 'incidenciasAbiertas'));"
+                  "pm.test('CP-23 | JSON estructurado con métricas', () => pm.expect(pm.response.json()).to.include.all.keys('totalEquipos', 'equiposDisponibles', 'equiposMantenimiento', 'prestamosAtrasados', 'reservasPendientes', 'incidenciasAbiertas'));",
+                  "pm.test('E11 | Esquema | resumen con 8 métricas enteras', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_resumen'))));"
                 ]
               }
             }
@@ -2777,7 +2829,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-23 | equipos por estado (200)', () => pm.response.to.have.status(200));",
-                  "pm.test('CP-23 | devuelve una lista', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                  "pm.test('CP-23 | devuelve una lista', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('E11 | Esquema | conteo de equipos por estado', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_equipos_por_estado'))));"
                 ]
               }
             }
@@ -2815,7 +2868,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-23 | reporte de mantenimientos (200)', () => pm.response.to.have.status(200));"
+                  "pm.test('CP-23 | reporte de mantenimientos (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('E11 | Esquema | reporte de mantenimientos', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_reporte_mantenimientos'))));"
                 ]
               }
             }
@@ -2853,7 +2907,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-23 | Encargado consulta atrasados (200)', () => pm.response.to.have.status(200));"
+                  "pm.test('CP-23 | Encargado consulta atrasados (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('E11 | Esquema | reporte de préstamos atrasados', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_reporte_atrasados'))));"
                 ]
               }
             }
@@ -2891,7 +2946,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('CP-23 | USUARIO no consulta atrasados (403)', () => pm.response.to.have.status(403));"
+                  "pm.test('CP-23 | USUARIO no consulta atrasados (403)', () => pm.response.to.have.status(403));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -2928,7 +2984,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('RNF-02 | ENCARGADO no administra usuarios (403)', () => pm.response.to.have.status(403));"
+                  "pm.test('RNF-02 | ENCARGADO no administra usuarios (403)', () => pm.response.to.have.status(403));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -2965,7 +3022,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('RNF-02 | USUARIO no lista todas las reservas (403)', () => pm.response.to.have.status(403));"
+                  "pm.test('RNF-02 | USUARIO no lista todas las reservas (403)', () => pm.response.to.have.status(403));",
+                  "pm.test('E11 | Esquema | error estándar de NestJS (statusCode y message)', () => pm.response.to.have.jsonSchema(JSON.parse(pm.collectionVariables.get('schema_error'))));"
                 ]
               }
             }
@@ -3132,6 +3190,93 @@
           ]
         }
       ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "schema_login",
+      "value": "{\"type\": \"object\", \"properties\": {\"access_token\": {\"type\": \"string\", \"pattern\": \"^[\\\\w-]+\\\\.[\\\\w-]+\\\\.[\\\\w-]+$\"}, \"usuario\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"nombre\": {\"type\": \"string\", \"minLength\": 1}, \"apellido\": {\"type\": \"string\", \"minLength\": 1}, \"correo\": {\"type\": \"string\", \"minLength\": 1}, \"rol\": {\"enum\": [\"ADMINISTRADOR\", \"ENCARGADO_INVENTARIO\", \"USUARIO\", \"TECNICO\"]}}, \"required\": [\"id\", \"nombre\", \"apellido\", \"correo\", \"rol\"], \"not\": {\"required\": [\"passwordHash\"]}}}, \"required\": [\"access_token\", \"usuario\"]}",
+      "type": "string"
+    },
+    {
+      "key": "schema_usuario",
+      "value": "{\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"nombre\": {\"type\": \"string\", \"minLength\": 1}, \"apellido\": {\"type\": \"string\", \"minLength\": 1}, \"correo\": {\"type\": \"string\", \"minLength\": 1}, \"rol\": {\"enum\": [\"ADMINISTRADOR\", \"ENCARGADO_INVENTARIO\", \"USUARIO\", \"TECNICO\"]}, \"activo\": {\"type\": \"boolean\"}, \"fechaCreacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaActualizacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}}, \"required\": [\"id\", \"nombre\", \"apellido\", \"correo\", \"rol\", \"activo\"], \"not\": {\"required\": [\"passwordHash\"]}}",
+      "type": "string"
+    },
+    {
+      "key": "schema_error",
+      "value": "{\"type\": \"object\", \"properties\": {\"statusCode\": {\"type\": \"integer\", \"minimum\": 400, \"maximum\": 599}, \"message\": {\"anyOf\": [{\"type\": \"string\"}, {\"type\": \"array\", \"items\": {\"type\": \"string\"}}]}, \"error\": {\"type\": \"string\"}}, \"required\": [\"statusCode\", \"message\"]}",
+      "type": "string"
+    },
+    {
+      "key": "schema_categorias",
+      "value": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"nombre\": {\"type\": \"string\", \"minLength\": 1}, \"descripcion\": {\"type\": [\"string\", \"null\"]}, \"activo\": {\"type\": \"boolean\"}, \"fechaCreacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}}, \"required\": [\"id\", \"nombre\", \"activo\"]}}",
+      "type": "string"
+    },
+    {
+      "key": "schema_equipo",
+      "value": "{\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"codigoInventario\": {\"type\": \"string\", \"minLength\": 1}, \"nombre\": {\"type\": \"string\", \"minLength\": 1}, \"descripcion\": {\"type\": [\"string\", \"null\"]}, \"marca\": {\"type\": \"string\", \"minLength\": 1}, \"modelo\": {\"type\": \"string\", \"minLength\": 1}, \"numeroSerie\": {\"type\": \"string\", \"minLength\": 1}, \"categoriaId\": {\"type\": \"string\", \"minLength\": 1}, \"fechaAdquisicion\": {\"type\": [\"string\", \"null\"], \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"estado\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"ubicacion\": {\"type\": \"string\", \"minLength\": 1}, \"observaciones\": {\"type\": [\"string\", \"null\"]}, \"activo\": {\"type\": \"boolean\"}, \"fechaCreacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaActualizacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}}, \"required\": [\"id\", \"codigoInventario\", \"nombre\", \"marca\", \"modelo\", \"numeroSerie\", \"categoriaId\", \"estado\", \"ubicacion\", \"activo\", \"fechaCreacion\"]}",
+      "type": "string"
+    },
+    {
+      "key": "schema_equipos",
+      "value": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"codigoInventario\": {\"type\": \"string\", \"minLength\": 1}, \"nombre\": {\"type\": \"string\", \"minLength\": 1}, \"descripcion\": {\"type\": [\"string\", \"null\"]}, \"marca\": {\"type\": \"string\", \"minLength\": 1}, \"modelo\": {\"type\": \"string\", \"minLength\": 1}, \"numeroSerie\": {\"type\": \"string\", \"minLength\": 1}, \"categoriaId\": {\"type\": \"string\", \"minLength\": 1}, \"fechaAdquisicion\": {\"type\": [\"string\", \"null\"], \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"estado\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"ubicacion\": {\"type\": \"string\", \"minLength\": 1}, \"observaciones\": {\"type\": [\"string\", \"null\"]}, \"activo\": {\"type\": \"boolean\"}, \"fechaCreacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaActualizacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"categoria\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"nombre\": {\"type\": \"string\", \"minLength\": 1}, \"descripcion\": {\"type\": [\"string\", \"null\"]}, \"activo\": {\"type\": \"boolean\"}, \"fechaCreacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}}, \"required\": [\"id\", \"nombre\", \"activo\"]}}, \"required\": [\"id\", \"codigoInventario\", \"nombre\", \"marca\", \"modelo\", \"numeroSerie\", \"categoriaId\", \"estado\", \"ubicacion\", \"activo\", \"fechaCreacion\", \"categoria\"]}}",
+      "type": "string"
+    },
+    {
+      "key": "schema_equipo_detalle",
+      "value": "{\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"codigoInventario\": {\"type\": \"string\", \"minLength\": 1}, \"nombre\": {\"type\": \"string\", \"minLength\": 1}, \"descripcion\": {\"type\": [\"string\", \"null\"]}, \"marca\": {\"type\": \"string\", \"minLength\": 1}, \"modelo\": {\"type\": \"string\", \"minLength\": 1}, \"numeroSerie\": {\"type\": \"string\", \"minLength\": 1}, \"categoriaId\": {\"type\": \"string\", \"minLength\": 1}, \"fechaAdquisicion\": {\"type\": [\"string\", \"null\"], \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"estado\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"ubicacion\": {\"type\": \"string\", \"minLength\": 1}, \"observaciones\": {\"type\": [\"string\", \"null\"]}, \"activo\": {\"type\": \"boolean\"}, \"fechaCreacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaActualizacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"categoria\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"nombre\": {\"type\": \"string\", \"minLength\": 1}, \"descripcion\": {\"type\": [\"string\", \"null\"]}, \"activo\": {\"type\": \"boolean\"}, \"fechaCreacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}}, \"required\": [\"id\", \"nombre\", \"activo\"]}, \"historial\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"equipoId\": {\"type\": \"string\", \"minLength\": 1}, \"estadoAnterior\": {\"type\": [\"string\", \"null\"]}, \"estadoNuevo\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"motivo\": {\"type\": [\"string\", \"null\"]}, \"usuarioId\": {\"type\": [\"string\", \"null\"]}, \"fecha\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}}, \"required\": [\"id\", \"equipoId\", \"estadoNuevo\", \"fecha\"]}}}, \"required\": [\"id\", \"codigoInventario\", \"nombre\", \"marca\", \"modelo\", \"numeroSerie\", \"categoriaId\", \"estado\", \"ubicacion\", \"activo\", \"fechaCreacion\", \"categoria\", \"historial\"]}",
+      "type": "string"
+    },
+    {
+      "key": "schema_reserva",
+      "value": "{\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"usuarioId\": {\"type\": \"string\", \"minLength\": 1}, \"equipoId\": {\"type\": \"string\", \"minLength\": 1}, \"fechaInicio\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaFin\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"motivo\": {\"type\": [\"string\", \"null\"]}, \"estado\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"aprobadoPorId\": {\"type\": [\"string\", \"null\"]}, \"observacionRespuesta\": {\"type\": [\"string\", \"null\"]}, \"fechaCreacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaActualizacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}}, \"required\": [\"id\", \"usuarioId\", \"equipoId\", \"fechaInicio\", \"fechaFin\", \"estado\"]}",
+      "type": "string"
+    },
+    {
+      "key": "schema_reserva_creada",
+      "value": "{\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"usuarioId\": {\"type\": \"string\", \"minLength\": 1}, \"equipoId\": {\"type\": \"string\", \"minLength\": 1}, \"fechaInicio\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaFin\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"motivo\": {\"type\": [\"string\", \"null\"]}, \"estado\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"aprobadoPorId\": {\"type\": [\"string\", \"null\"]}, \"observacionRespuesta\": {\"type\": [\"string\", \"null\"]}, \"fechaCreacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaActualizacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"equipo\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"codigoInventario\": {\"type\": \"string\", \"minLength\": 1}, \"nombre\": {\"type\": \"string\", \"minLength\": 1}, \"descripcion\": {\"type\": [\"string\", \"null\"]}, \"marca\": {\"type\": \"string\", \"minLength\": 1}, \"modelo\": {\"type\": \"string\", \"minLength\": 1}, \"numeroSerie\": {\"type\": \"string\", \"minLength\": 1}, \"categoriaId\": {\"type\": \"string\", \"minLength\": 1}, \"fechaAdquisicion\": {\"type\": [\"string\", \"null\"], \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"estado\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"ubicacion\": {\"type\": \"string\", \"minLength\": 1}, \"observaciones\": {\"type\": [\"string\", \"null\"]}, \"activo\": {\"type\": \"boolean\"}, \"fechaCreacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaActualizacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}}, \"required\": [\"id\", \"codigoInventario\", \"nombre\", \"marca\", \"modelo\", \"numeroSerie\", \"categoriaId\", \"estado\", \"ubicacion\", \"activo\", \"fechaCreacion\"]}, \"usuario\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"nombre\": {\"type\": \"string\", \"minLength\": 1}, \"apellido\": {\"type\": \"string\", \"minLength\": 1}, \"correo\": {\"type\": \"string\", \"minLength\": 1}}, \"required\": [\"id\", \"nombre\", \"correo\"], \"not\": {\"required\": [\"passwordHash\"]}}}, \"required\": [\"id\", \"usuarioId\", \"equipoId\", \"fechaInicio\", \"fechaFin\", \"estado\", \"equipo\", \"usuario\"]}",
+      "type": "string"
+    },
+    {
+      "key": "schema_prestamo",
+      "value": "{\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"reservaId\": {\"type\": [\"string\", \"null\"]}, \"usuarioId\": {\"type\": \"string\", \"minLength\": 1}, \"equipoId\": {\"type\": \"string\", \"minLength\": 1}, \"entregadoPorId\": {\"type\": \"string\", \"minLength\": 1}, \"fechaPrestamo\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaLimite\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaDevolucion\": {\"type\": [\"string\", \"null\"], \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"estado\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"observaciones\": {\"type\": [\"string\", \"null\"]}, \"fechaCreacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}}, \"required\": [\"id\", \"usuarioId\", \"equipoId\", \"entregadoPorId\", \"fechaPrestamo\", \"fechaLimite\", \"estado\"]}",
+      "type": "string"
+    },
+    {
+      "key": "schema_devolucion",
+      "value": "{\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"esTardia\": {\"type\": \"boolean\"}}, \"required\": [\"id\", \"esTardia\"]}",
+      "type": "string"
+    },
+    {
+      "key": "schema_mantenimiento",
+      "value": "{\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"equipoId\": {\"type\": \"string\", \"minLength\": 1}, \"tecnicoId\": {\"type\": \"string\", \"minLength\": 1}, \"tipo\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"descripcion\": {\"type\": \"string\", \"minLength\": 1}, \"diagnostico\": {\"type\": [\"string\", \"null\"]}, \"fechaInicio\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaFin\": {\"type\": [\"string\", \"null\"], \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"estado\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"costo\": {\"type\": [\"string\", \"number\", \"null\"]}, \"observaciones\": {\"type\": [\"string\", \"null\"]}}, \"required\": [\"id\", \"equipoId\", \"tecnicoId\", \"tipo\", \"fechaInicio\", \"estado\"]}",
+      "type": "string"
+    },
+    {
+      "key": "schema_incidencia",
+      "value": "{\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"equipoId\": {\"type\": \"string\", \"minLength\": 1}}, \"required\": [\"id\", \"equipoId\"]}",
+      "type": "string"
+    },
+    {
+      "key": "schema_resumen",
+      "value": "{\"type\": \"object\", \"properties\": {\"totalEquipos\": {\"type\": \"integer\", \"minimum\": 0}, \"equiposDisponibles\": {\"type\": \"integer\", \"minimum\": 0}, \"equiposPrestados\": {\"type\": \"integer\", \"minimum\": 0}, \"equiposReservados\": {\"type\": \"integer\", \"minimum\": 0}, \"equiposMantenimiento\": {\"type\": \"integer\", \"minimum\": 0}, \"prestamosAtrasados\": {\"type\": \"integer\", \"minimum\": 0}, \"reservasPendientes\": {\"type\": \"integer\", \"minimum\": 0}, \"incidenciasAbiertas\": {\"type\": \"integer\", \"minimum\": 0}}, \"required\": [\"totalEquipos\", \"equiposDisponibles\", \"equiposPrestados\", \"equiposReservados\", \"equiposMantenimiento\", \"prestamosAtrasados\", \"reservasPendientes\", \"incidenciasAbiertas\"]}",
+      "type": "string"
+    },
+    {
+      "key": "schema_equipos_por_estado",
+      "value": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"estado\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"_count\": {\"type\": \"object\", \"properties\": {\"_all\": {\"type\": \"integer\", \"minimum\": 0}}, \"required\": [\"_all\"]}}, \"required\": [\"estado\", \"_count\"]}}",
+      "type": "string"
+    },
+    {
+      "key": "schema_reporte_mantenimientos",
+      "value": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"equipoId\": {\"type\": \"string\", \"minLength\": 1}, \"tecnicoId\": {\"type\": \"string\", \"minLength\": 1}, \"tipo\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"descripcion\": {\"type\": \"string\", \"minLength\": 1}, \"diagnostico\": {\"type\": [\"string\", \"null\"]}, \"fechaInicio\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaFin\": {\"type\": [\"string\", \"null\"], \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"estado\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"costo\": {\"type\": [\"string\", \"number\", \"null\"]}, \"observaciones\": {\"type\": [\"string\", \"null\"]}, \"equipo\": {\"type\": \"object\"}, \"tecnico\": {\"type\": \"object\"}}, \"required\": [\"id\", \"equipoId\", \"tecnicoId\", \"tipo\", \"fechaInicio\", \"estado\", \"equipo\", \"tecnico\"]}}",
+      "type": "string"
+    },
+    {
+      "key": "schema_reporte_atrasados",
+      "value": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"minLength\": 1}, \"reservaId\": {\"type\": [\"string\", \"null\"]}, \"usuarioId\": {\"type\": \"string\", \"minLength\": 1}, \"equipoId\": {\"type\": \"string\", \"minLength\": 1}, \"entregadoPorId\": {\"type\": \"string\", \"minLength\": 1}, \"fechaPrestamo\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaLimite\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"fechaDevolucion\": {\"type\": [\"string\", \"null\"], \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"estado\": {\"type\": \"string\", \"pattern\": \"^[A-Z_]+$\"}, \"observaciones\": {\"type\": [\"string\", \"null\"]}, \"fechaCreacion\": {\"type\": \"string\", \"pattern\": \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"}, \"equipo\": {\"type\": \"object\"}, \"usuario\": {\"type\": \"object\"}}, \"required\": [\"id\", \"usuarioId\", \"equipoId\", \"entregadoPorId\", \"fechaPrestamo\", \"fechaLimite\", \"estado\", \"equipo\", \"usuario\"]}}",
+      "type": "string"
     }
   ]
 }
