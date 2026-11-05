@@ -18,7 +18,7 @@ pipeline {
     }
     stage('2. Pruebas unitarias') {
       steps {
-        dir('backend')  { sh 'npx jest --ci --coverage --reporters=default --reporters=jest-junit' }
+        dir('backend')  { sh 'npx jest --ci --coverage --coverageProvider=v8 --reporters=default --reporters=jest-junit' }
         dir('frontend') { sh 'npx vitest run --coverage --reporter=default --reporter=junit --outputFile.junit=reports/junit.xml' }
       }
       post { always { junit allowEmptyResults: true, testResults: 'backend/junit.xml,frontend/reports/junit.xml' } }
