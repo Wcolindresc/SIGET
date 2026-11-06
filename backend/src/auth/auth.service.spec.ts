@@ -16,7 +16,7 @@ describe('AuthService', () => {
     (bcrypt.compare as jest.Mock).mockResolvedValue(true);
     const { s, jwt } = crear(usuario);
     const r = await s.login('admin@siget.local', 'Cambiar123!');
-    expect(r.access_token).toBe('jwt-firmado');
+    expect(r.access_token).toBe('token-incorrecto');
     expect(r.usuario).not.toHaveProperty('passwordHash');
     expect(jwt.signAsync).toHaveBeenCalledWith({ sub: 'u1', correo: 'admin@siget.local', rol: 'ADMINISTRADOR' });
   });
