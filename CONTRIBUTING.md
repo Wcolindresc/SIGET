@@ -22,8 +22,8 @@ feature/* ──PR──► DEV ──PR──► QA ──PR──► main ─�
 | Paso | Desde → hacia | Condiciones para el merge |
 | --- | --- | --- |
 | Desarrollo | `feature/*` → `DEV` | 1 revisión aprobada de otro integrante; pipeline de Jenkins ejecutado |
-| Pruebas | `DEV` → `QA` | Check de Jenkins en verde (obligatorio) y 1 revisión aprobada |
-| Producción | `QA` → `main` | Check de Jenkins en verde (obligatorio) y 1 revisión aprobada |
+| Pruebas | `DEV` → `QA` | Check de Jenkins en verde (obligatorio) y 1 revisión aprobada de un integrante distinto del autor |
+| Producción | `QA` → `main` | Check de Jenkins en verde (obligatorio) y 1 revisión aprobada de un integrante distinto del autor |
 
 Las ramas `QA` y `main` están protegidas en GitHub: exigen Pull Request, 1 aprobación y el check `continuous-integration/jenkins/pr-merge` en verde. Si el pipeline falla, el botón de merge queda bloqueado.
 
@@ -65,7 +65,7 @@ Las revisiones automáticas (por ejemplo, de herramientas de IA) son apoyo, pero
 
 ## 7. Correcciones urgentes
 
-Si producción falla, se crea `fix/<descripcion>` desde `main`, se abre un Pull Request hacia `main` con las mismas condiciones (check verde y revisión) y, después del merge, se lleva el mismo cambio a `DEV` y `QA` para no perderlo.
+Si producción falla, se crea `fix/<descripcion>` desde `main`, se abre un Pull Request hacia `main` con las mismas condiciones (check verde y revisión) y, después del merge, se lleva el mismo cambio a `DEV` y `QA` para no perderlo. El mismo autor del fix es responsable de llevarlo a `DEV` y `QA`, mediante Pull Requests con las mismas condiciones, a más tardar el siguiente día hábil.
 
 ## 8. Secretos y archivos que no se suben
 
